@@ -2,6 +2,63 @@ const express = require("express");
 const router = express.Router();
 const AddOrder = require("../models/add_order");
 const User = require("../models/user");
+const jwt = require("jsonwebtoken");
+
+
+const authenticateToken = (req, res, next) => {
+    const token = req.headers['authorization'];
+    if (!token) return res.status(401).json({ error: "Access denied, no token provided" });
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        if (err) return res.status(403).json({ error: "Invalid token" });
+        req.user = user;
+        next();
+    });
+};
+
+
+router.put("/orders/:orderId", authenticateToken, async (req, res) => {
+  console.log("🔍 Body received:", req.body);
+  const { orderId } = req.params;
+  const { status } = req.body;
+
+  const validStatuses = ["pending", "Delivery", "completed", "canceled"];
+  if (!status || !validStatuses.includes(status)) {
+      return res.status(400).json({ error: "Invalid status" });
+  }
+
+  try {
+    const order = await AddOrder.findByPk(orderId);
+    if (!order) {
+          return res.status(404).json({ error: "Order not found" });
+      }
+
+      if (req.user.role !== "admin" && order.userId !== req.user.id) {
+          return res.status(403).json({ error: "Access denied, you are not the owner of this order" });
+      }
+
+      const currentStatus = order.status;
+
+      if (
+          (currentStatus === "pending" && status !== "Delivery") ||
+          (currentStatus === "Delivery" && !["completed", "canceled"].includes(status)) ||
+          (["completed", "canceled"].includes(currentStatus))
+      ) {
+          return res.status(400).json({ error: `Cannot change order status from ${currentStatus} to ${status}` });
+      }
+
+      await order.update({ status });
+
+      res.status(200).json({
+          message: `Order status updated from ${currentStatus} to ${status}`,
+          order
+      });
+
+  } catch (err) {
+      console.error("❌ Error updating order status:", err);
+      res.status(500).json({ error: "An error occurred while updating the order status" });
+  }
+});
 
 router.get("/orders/:userId", async (req, res) => {
   try {
@@ -197,6 +254,8 @@ router.get("/ordersCanceled", async (req, res) => {
     res.status(500).json({ message: "Failed to fetch pending orders", error: error.message });
   }
 });
+
+
 
 router.get("/orders", async (req, res) => {
   try {

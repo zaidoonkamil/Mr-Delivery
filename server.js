@@ -3,6 +3,7 @@ const sequelize = require("./config/db");
 const usersRouter = require("./routes/user");
 const addOrdersRouter = require("./routes/add_order");
 const orderRouter = require('./routes/order');
+const adsRoutes = require("./routes/ads");
 
 const app = express();
 app.use(express.json());
@@ -16,6 +17,7 @@ sequelize.sync({ force: false })
 app.use("/", usersRouter);
 app.use("/", addOrdersRouter);
 app.use("/", orderRouter);
+app.use("/", adsRoutes);
 
 
 app.listen( 3000 , () => {

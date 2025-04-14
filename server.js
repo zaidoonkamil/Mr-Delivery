@@ -4,6 +4,7 @@ const usersRouter = require("./routes/user");
 const addOrdersRouter = require("./routes/add_order");
 const orderRouter = require('./routes/order');
 const adsRoutes = require("./routes/ads");
+const dashboardRoutes = require("./routes/dashboard.js");
 
 const app = express();
 app.use(express.json());
@@ -18,6 +19,7 @@ app.use("/", usersRouter);
 app.use("/", addOrdersRouter);
 app.use("/", orderRouter);
 app.use("/", adsRoutes);
+app.use("/", dashboardRoutes);
 
 
 app.listen( 3000 , () => {

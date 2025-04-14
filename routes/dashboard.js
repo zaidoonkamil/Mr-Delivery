@@ -61,6 +61,7 @@ router.get('/stats/:userId', async (req, res) => {
       res.json({
         totalOrders,
         pendingOrders,
+        deliveryOrders,
         canceledOrders,
         completedOrders,
       });

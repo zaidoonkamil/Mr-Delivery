@@ -22,6 +22,6 @@ app.use("/", adsRoutes);
 app.use("/", dashboardRoutes);
 
 
-app.listen( 3000 , () => {
+app.listen( 6000 , () => {
     console.log(`🚀 Server running on http://localhost:3000`);
 });
